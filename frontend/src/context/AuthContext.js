@@ -2,40 +2,63 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
+const AUTH_STORAGE_KEYS = ['access_token', 'refresh_token', 'user'];
+
+const clearStoredAuth = () => {
+  AUTH_STORAGE_KEYS.forEach((key) => {
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+  });
+};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const loadUser = async () => {
+      AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+
+      if (!sessionStorage.getItem('access_token')) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await api.get('/auth/me/');
+        sessionStorage.setItem('user', JSON.stringify(res.data));
+        setUser(res.data);
+      } catch (err) {
+        clearStoredAuth();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
   }, []);
 
   const login = async (username, password) => {
     const res = await api.post('/auth/login/', { username, password });
-    localStorage.setItem('access_token', res.data.access);
-    localStorage.setItem('refresh_token', res.data.refresh);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
+    sessionStorage.setItem('access_token', res.data.access);
+    sessionStorage.setItem('refresh_token', res.data.refresh);
+    sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data.user;
   };
 
   const register = async (data) => {
     const res = await api.post('/auth/register/', data);
-    localStorage.setItem('access_token', res.data.access);
-    localStorage.setItem('refresh_token', res.data.refresh);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
+    sessionStorage.setItem('access_token', res.data.access);
+    sessionStorage.setItem('refresh_token', res.data.refresh);
+    sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data.user;
   };
 
   const logout = () => {
-    localStorage.clear();
+    clearStoredAuth();
     setUser(null);
   };
 
