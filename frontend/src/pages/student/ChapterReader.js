@@ -15,7 +15,7 @@ export default function ChapterReader() {
       .then(res => setChapter(res.data))
       .catch(err => {
         if (err.response?.status === 403) {
-          setError('This chapter is not available. Make sure you are enrolled in the course.');
+          setError('This chapter is private or you have not joined the course yet.');
         } else {
           setError('Could not load chapter.');
         }

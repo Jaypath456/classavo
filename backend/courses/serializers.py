@@ -4,10 +4,13 @@ from users.serializers import UserSerializer
 
 
 class ChapterSerializer(serializers.ModelSerializer):
+    course = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Chapter
         fields = [
             'id',
+            'course',
             'title',
             'content',
             'visibility',
@@ -15,8 +18,22 @@ class ChapterSerializer(serializers.ModelSerializer):
         ]
 
 
+class ChapterListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chapter
+        fields = [
+            'id',
+            'course',
+            'title',
+            'visibility',
+            'order_index'
+        ]
+
+
 class CourseSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
+    chapter_count = serializers.SerializerMethodField()
+    enrolled_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -25,8 +42,16 @@ class CourseSerializer(serializers.ModelSerializer):
             'title',
             'description',
             'instructor',
-            'is_published'
+            'is_published',
+            'chapter_count',
+            'enrolled_count'
         ]
+
+    def get_chapter_count(self, obj):
+        return obj.chapters.count()
+
+    def get_enrolled_count(self, obj):
+        return obj.enrollments.count()
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
@@ -36,5 +61,6 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         model = Enrollment
         fields = [
             'id',
-            'course'
+            'course',
+            'enrolled_at'
         ]

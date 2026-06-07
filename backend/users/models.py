@@ -14,7 +14,7 @@ class User(AbstractUser):
         default='student'
     )
 
-    bio = models.TextField(blank=True)
+    bio = models.TextField(blank=True, default='')
 
     def __str__(self):
         return self.username

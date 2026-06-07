@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import { createEditor, Transforms, Editor, Element as SlateElement } from 'slate';
-import { Slate, Editable, withReact, useSlate } from 'slate-react';
-import { withHistory } from 'slate-history';
+import { Transforms, Editor, Element as SlateElement } from 'slate';
+import { Plate, PlateContent, useEditorRef, usePlateEditor } from '@udecode/plate/react';
 import './PlateEditor.css';
 
 // Default empty document structure (Plate.js compatible JSON format)
@@ -72,7 +71,7 @@ const toggleBlock = (editor, format) => {
 
 // ─── Toolbar ───────────────────────────────────────────────────
 function Toolbar() {
-  const editor = useSlate();
+  const editor = useEditorRef();
 
   return (
     <div className="editor-toolbar">
@@ -186,44 +185,45 @@ function Leaf({ attributes, children, leaf }) {
 
 // ─── Main Editor ───────────────────────────────────────────────
 export default function PlateEditor({ value, onChange, readOnly = false }) {
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-
   const initialValue = useMemo(() => {
     if (!value || (Array.isArray(value) && value.length === 0)) {
       return emptyDocument;
     }
     return value;
-  }, []); // only on mount
+  }, [value]);
+
+  const editor = usePlateEditor({
+    value: initialValue,
+  }, []);
 
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
   if (readOnly) {
     return (
-      <Slate editor={editor} initialValue={initialValue} onChange={() => {}}>
+      <Plate editor={editor} readOnly>
         <div className="editor-readonly">
-          <Editable
+          <PlateContent
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             readOnly
           />
         </div>
-      </Slate>
+      </Plate>
     );
   }
 
   return (
-    <Slate
+    <Plate
       editor={editor}
-      initialValue={initialValue}
-      onChange={(newValue) => {
+      onValueChange={({ value: newValue }) => {
         if (onChange) onChange(newValue);
       }}
     >
       <div className="editor-wrapper">
         <Toolbar />
         <div className="editor-body">
-          <Editable
+          <PlateContent
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             placeholder="Start writing your chapter content..."
@@ -232,6 +232,6 @@ export default function PlateEditor({ value, onChange, readOnly = false }) {
           />
         </div>
       </div>
-    </Slate>
+    </Plate>
   );
 }

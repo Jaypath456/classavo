@@ -37,7 +37,11 @@ export default function CourseView() {
       await api.post(`/courses/${courseId}/enroll/`);
       setIsEnrolled(true);
     } catch (err) {
-      alert('Could not join course.');
+      if (err.response?.data?.error === 'Already enrolled in this course') {
+        setIsEnrolled(true);
+      } else {
+        alert('Could not join course.');
+      }
     } finally {
       setEnrolling(false);
     }

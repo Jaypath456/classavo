@@ -4,13 +4,18 @@ from users.models import User
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, default='')
     instructor = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='courses'
     )
     is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
@@ -33,6 +38,11 @@ class Chapter(models.Model):
         default='private'
     )
     order_index = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order_index', 'created_at']
 
     def __str__(self):
         return self.title
@@ -49,6 +59,7 @@ class Enrollment(models.Model):
         on_delete=models.CASCADE,
         related_name='enrollments'
     )
+    enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ['student', 'course']

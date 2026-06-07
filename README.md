@@ -1,61 +1,62 @@
 # Classavo LMS
 
-A simple Learning Management System built with Django REST Framework + React.
+A small Learning Management System built for the Classavo Software Developer Intern assignment.
 
 ## Tech Stack
-- **Backend**: Django + Django REST Framework + SimpleJWT
-- **Frontend**: React (Create React App) + Slate.js (Plate.js-compatible editor) + React Router
 
----
+- Backend: Django, Django REST Framework, SimpleJWT
+- Frontend: React, React Router, Plate.js, Axios
+- Database: SQLite for local development
+
+## Features
+
+### Instructor
+
+- Register and log in as an instructor
+- Create, edit, publish, unpublish, and delete courses
+- Create, edit, and delete chapters inside a course
+- Write chapter content with a Plate.js rich text editor
+- Mark each chapter as public or private
+- See course chapter and enrollment counts
+
+### Student
+
+- Register and log in as a student
+- Browse published courses
+- Join a published course
+- View joined courses
+- Read public chapters from courses they have joined
+- Private chapters and unjoined course content are blocked by the backend
 
 ## Project Structure
 
-```
-lms/
-├── backend/          # Django project
-│   ├── lms_project/  # Main Django config (settings, urls)
-│   ├── users/        # User model + auth (register, login)
-│   ├── courses/      # Course, Chapter, Enrollment models + API
-│   ├── manage.py
-│   └── requirements.txt
-└── frontend/         # React app
-    └── src/
-        ├── api/          # axios instance
-        ├── components/   # Navbar, PlateEditor, ProtectedRoute
-        ├── context/      # AuthContext (JWT storage)
-        └── pages/
-            ├── auth/         # Login, Register
-            ├── instructor/   # Dashboard, CourseList, CourseForm, CourseDetail, ChapterForm
-            └── student/      # Catalog, MyCourses, CourseView, ChapterReader
+```text
+backend/
+  lms_project/      Django project settings and URLs
+  users/            Custom user model, auth endpoints, serializers
+  courses/          Course, chapter, enrollment models and APIs
+frontend/
+  src/
+    api/            Axios API client
+    components/     Navbar, protected routes, Plate editor
+    context/        Auth state
+    pages/          Auth, instructor, and student screens
 ```
 
----
-
-## Setup & Running
+## Setup
 
 ### Backend
 
 ```bash
 cd backend
-
-# Create and activate virtual environment (if not already done)
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-
-# Install dependencies
+venv\Scripts\activate
 pip install -r requirements.txt
-
-# Run migrations
 python manage.py migrate
-
-# (Optional) create an admin user
-python manage.py createsuperuser
-
-# Start the server
 python manage.py runserver
 ```
 
-Backend runs at: http://localhost:8000
+The API runs at `http://localhost:8000`.
 
 ### Frontend
 
@@ -65,58 +66,28 @@ npm install
 npm start
 ```
 
-Frontend runs at: http://localhost:3000
+The React app runs at `http://localhost:3000`.
 
----
+## Useful API Endpoints
 
-## Features
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| POST | `/api/auth/register/` | Register instructor or student |
+| POST | `/api/auth/login/` | Log in and receive JWT tokens |
+| GET | `/api/auth/me/` | Validate token and fetch current user |
+| GET | `/api/courses/` | List published courses |
+| GET | `/api/courses/mine/` | Instructor course list |
+| POST | `/api/courses/create/` | Instructor creates course |
+| GET/PUT/DELETE | `/api/courses/{id}/` | Course detail and management |
+| POST | `/api/courses/{id}/enroll/` | Student joins course |
+| GET | `/api/courses/{id}/chapters/` | List visible chapter metadata |
+| POST | `/api/courses/{id}/chapters/create/` | Instructor creates chapter |
+| GET/PUT/DELETE | `/api/chapters/{id}/` | Read or manage chapter |
+| GET | `/api/my-courses/` | Student joined courses |
 
-### Instructor
-- Register/login as instructor
-- Create and manage courses (with publish/unpublish toggle)
-- Add chapters to courses using the rich text editor
-- Set each chapter as **public** or **private**
-- View enrolled student count per course
+## Notes
 
-### Student
-- Register/login as student
-- Browse all published courses
-- Join/enroll in a course
-- Read public chapters via the chapter reader
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register/` | Register new user |
-| POST | `/api/auth/login/` | Login, returns JWT |
-| GET | `/api/auth/me/` | Get current user |
-| GET | `/api/courses/` | All published courses |
-| GET | `/api/courses/mine/` | Instructor's courses |
-| POST | `/api/courses/create/` | Create a course |
-| GET/PUT/DELETE | `/api/courses/{id}/` | Course CRUD |
-| POST | `/api/courses/{id}/enroll/` | Student enroll |
-| GET | `/api/courses/{id}/enrollment-status/` | Check if enrolled |
-| GET | `/api/courses/{id}/chapters/` | List chapters |
-| POST | `/api/courses/{id}/chapters/create/` | Create chapter |
-| GET/PUT/DELETE | `/api/chapters/{id}/` | Chapter CRUD |
-| GET | `/api/my-courses/` | Student's enrolled courses |
-
----
-
-## Notes on the Editor
-
-The chapter editor uses **Slate.js** (which Plate.js is built on top of). Chapter content is stored as a **JSON document tree** in the database (`JSONField`), the same format Plate.js uses. This makes it easy to swap in the full Plate.js UI library later without changing the data model.
-
-Supported formatting: Bold, Italic, Underline, Inline Code, H1, H2, Bullet List, Numbered List, Block Quote.
-
----
-
-## Known Issues / Intentional Simplifications
-
-- No pagination on the course catalog (fine for demo scale)
-- The `order_index` field for chapters must be set manually; there's no drag-to-reorder UI
-- No image upload support in the editor
-- JWT refresh token rotation is not implemented (access token lasts 24h for demo convenience)
+- Access tokens are stored in `sessionStorage`, not `localStorage`.
+- Django is the source of truth for authentication and permissions.
+- Chapter content is stored as JSON in the database.
+- This project intentionally keeps the UI and API simple for a short coding assignment.

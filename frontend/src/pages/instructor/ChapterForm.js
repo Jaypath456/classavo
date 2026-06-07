@@ -14,8 +14,10 @@ export default function ChapterForm() {
     visibility: 'private',
     order_index: 0,
   });
+  const [chapterCourseId, setChapterCourseId] = useState(courseId || '');
   const [content, setContent] = useState(emptyDocument);
   const [loading, setLoading] = useState(false);
+  const [loadingChapter, setLoadingChapter] = useState(isEditing);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -27,11 +29,13 @@ export default function ChapterForm() {
             visibility: res.data.visibility,
             order_index: res.data.order_index,
           });
+          setChapterCourseId(res.data.course);
           if (res.data.content && res.data.content.length > 0) {
             setContent(res.data.content);
           }
         })
-        .catch(() => setError('Could not load chapter'));
+        .catch(() => setError('Could not load chapter'))
+        .finally(() => setLoadingChapter(false));
     }
   }, [chapterId, isEditing]);
 
@@ -48,7 +52,7 @@ export default function ChapterForm() {
     try {
       if (isEditing) {
         await api.put(`/chapters/${chapterId}/`, payload);
-        navigate(`/instructor/courses/${courseId || getCourseIdFromBack()}`);
+        navigate(`/instructor/courses/${courseId || chapterCourseId}`);
       } else {
         await api.post(`/courses/${courseId}/chapters/create/`, payload);
         navigate(`/instructor/courses/${courseId}`);
@@ -58,11 +62,6 @@ export default function ChapterForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // If editing, we need courseId from the chapter data or URL
-  const getCourseIdFromBack = () => {
-    return 'back'; // fallback: use navigate(-1)
   };
 
   const handleCancel = () => {
@@ -77,6 +76,9 @@ export default function ChapterForm() {
 
       {error && <div className="error-msg">{error}</div>}
 
+      {loadingChapter ? (
+        <p>Loading chapter...</p>
+      ) : (
       <form onSubmit={handleSubmit}>
         <div className="form-card">
           <div className="form-row">
@@ -133,6 +135,7 @@ export default function ChapterForm() {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }
