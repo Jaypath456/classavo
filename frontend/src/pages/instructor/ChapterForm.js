@@ -13,7 +13,12 @@ export default function ChapterForm() {
   const isEditing = Boolean(chapterId);
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ title: '', visibility: 'private', order_index: 0 });
+  const [form, setForm] = useState({ 
+    title: '', 
+    visibility: 'private', 
+    order_index: 0 
+  });
+  
   const [content, setContent] = useState(emptyDocument);
   const [isDirty, setIsDirty] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,6 +95,18 @@ export default function ChapterForm() {
               placeholder="Chapter Title" 
               required 
             />
+          </div>
+
+          <div className="form-group">
+            <label>Visibility</label>
+            <select 
+              name="visibility" 
+              value={form.visibility} 
+              onChange={(e) => { setForm({...form, visibility: e.target.value}); setIsDirty(true); }}
+            >
+              <option value="private">Private</option>
+              <option value="public">Public</option>
+            </select>
           </div>
 
           <div className="form-group">
